@@ -11,12 +11,13 @@ from .renderers import ArticleJSONRenderer, CommentJSONRenderer
 from .serializers import ArticleSerializer, CommentSerializer, TagSerializer
 
 
-class ArticleViewSet(mixins.CreateModelMixin, 
+class ArticleViewSet(mixins.CreateModelMixin,
                      mixins.ListModelMixin,
                      mixins.RetrieveModelMixin,
                      viewsets.GenericViewSet):
 
     lookup_field = 'slug'
+    lookup_value_regex = r'[a-z0-9\-]+'
     queryset = Article.objects.select_related('author', 'author__user')
     permission_classes = (IsAuthenticatedOrReadOnly,)
     renderer_classes = (ArticleJSONRenderer,)

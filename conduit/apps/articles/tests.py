@@ -1,6 +1,7 @@
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
+from model_mommy import mommy
 
 from conduit.apps.articles.models import Article
 from conduit.apps.authentication.models import User
@@ -32,3 +33,21 @@ class ArticlesTests(APITestCase):
             'author': self.test_user.id
         }
         self.assertEqual(actual, article_payload)
+
+    def test_should_retrieve_all_articles(self):
+        quantity = 3
+        mommy.make(Article, author=self.test_user.profile, _quantity=quantity)
+
+        response = self.client.get(reverse('articles:articles-list'))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], quantity)
+        self.assertEqual(len(response.data['results']), quantity)
+
+    def test_should_retrieve_single_article(self):
+        article = mommy.make(Article, slug=None, author=self.test_user.profile)
+
+        response = self.client.get(reverse('articles:articles-detail', kwargs={'slug': article.slug}))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['title'], article.title)
