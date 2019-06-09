@@ -1,3 +1,4 @@
+from django.contrib import admin
 from django.db import models
 
 from conduit.apps.core.models import TimestampedModel
@@ -20,7 +21,7 @@ class Article(TimestampedModel):
     )
 
     tags = models.ManyToManyField(
-        'articles.Tag', related_name='articles'
+        'articles.Tag', related_name='articles', blank=True
     )
 
     def __str__(self):
@@ -45,3 +46,5 @@ class Tag(TimestampedModel):
 
     def __str__(self):
         return self.tag
+
+admin.site.register([Article])
