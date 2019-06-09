@@ -1,3 +1,4 @@
+from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
@@ -19,7 +20,7 @@ class ArticlesTests(APITestCase):
             'body': 'body',
             'author': self.test_user.id
         }
-        response = self.client.post('/api/articles', data={
+        response = self.client.post(reverse('articles:articles-list'), data={
             'article': article_payload
         })
 
