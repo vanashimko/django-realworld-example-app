@@ -1,9 +1,7 @@
-import unittest
-
 from django.urls import reverse
+from model_mommy import mommy
 from rest_framework import status
 from rest_framework.test import APITestCase
-from model_mommy import mommy
 
 from conduit.apps.articles.models import Article, Tag
 from conduit.apps.authentication.models import User
@@ -70,7 +68,6 @@ class ArticlesTests(APITestCase):
         expected_article['author'] = self.test_user.id
         self.assertEqual(actual, expected_article)
 
-    @unittest.skip('not implemented')
     def test_should_not_create_article_for_another_user(self):
         another_user = User.objects.create_user(username='another', email='a@b.com')
         expected_article = {
@@ -78,6 +75,16 @@ class ArticlesTests(APITestCase):
             'body': 'body',
             'tags': ['tag1'],
             'author': another_user.id
+        }
+        response = self.client.post(reverse('articles:articles-list'), data=expected_article)
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN, msg=response.data)
+        self.assertEqual(Article.objects.count(), 0)
+
+    def test_should_not_create_article_unauthorized(self):
+        self.client.credentials()  # reset credentials
+        expected_article = {
+            'title': 'title',
         }
         response = self.client.post(reverse('articles:articles-list'), data=expected_article)
 

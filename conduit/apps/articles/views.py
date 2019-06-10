@@ -1,4 +1,5 @@
-from rest_framework import generics, status, viewsets
+from rest_framework import generics, status, viewsets, permissions
+from rest_framework.compat import is_authenticated
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import (
     AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
@@ -11,11 +12,28 @@ from .renderers import ArticleJSONRenderer, CommentJSONRenderer
 from .serializers import ArticleSerializer, CommentSerializer, TagSerializer
 
 
+class IsArticleAuthorOrStaffOrReadOnly(permissions.BasePermission):
+
+    def has_permission(self, request, view):
+        if request.method in ('GET', 'HEAD', 'OPTIONS'):
+            return True
+        if not request.user:
+            return False
+        if not is_authenticated(request.user):
+            return False
+        if request.user.is_staff:
+            return True
+        if request.method == 'POST':
+            explicit_author_id = request.data.get('author')
+            return (not explicit_author_id) or request.user.id == request.data['author']
+        return True
+
+
 class ArticleViewSet(viewsets.ModelViewSet):
     lookup_field = 'slug'
     lookup_value_regex = r'[a-z0-9\-]+'
     queryset = Article.objects.select_related('author', 'author__user')
-    permission_classes = (IsAuthenticatedOrReadOnly,)
+    permission_classes = (IsAuthenticatedOrReadOnly, IsArticleAuthorOrStaffOrReadOnly,)
     renderer_classes = (ArticleJSONRenderer,)
     serializer_class = ArticleSerializer
 
