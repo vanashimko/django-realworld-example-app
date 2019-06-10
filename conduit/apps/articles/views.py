@@ -7,6 +7,7 @@ from rest_framework.permissions import (
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.core.permissions import IsOwnerOrStaffOrReadOnly
 from .models import Article, Comment, Tag
 from .renderers import ArticleJSONRenderer, CommentJSONRenderer
 from .serializers import ArticleSerializer, CommentSerializer, TagSerializer
@@ -33,7 +34,7 @@ class ArticleViewSet(viewsets.ModelViewSet):
     lookup_field = 'slug'
     lookup_value_regex = r'[a-z0-9\-]+'
     queryset = Article.objects.select_related('author', 'author__user')
-    permission_classes = (IsAuthenticatedOrReadOnly, IsArticleAuthorOrStaffOrReadOnly,)
+    permission_classes = (IsAuthenticatedOrReadOnly, IsArticleAuthorOrStaffOrReadOnly, IsOwnerOrStaffOrReadOnly, )
     renderer_classes = (ArticleJSONRenderer,)
     serializer_class = ArticleSerializer
 

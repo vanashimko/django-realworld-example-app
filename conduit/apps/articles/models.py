@@ -1,10 +1,10 @@
 from django.contrib import admin
 from django.db import models
 
-from conduit.apps.core.models import TimestampedModel
+from conduit.apps.core.models import TimestampedModel, OwnedModel
 
 
-class Article(TimestampedModel):
+class Article(TimestampedModel, OwnedModel):
     slug = models.SlugField(db_index=True, max_length=255, unique=True)
     title = models.CharField(db_index=True, max_length=255)
 
@@ -26,6 +26,10 @@ class Article(TimestampedModel):
 
     def __str__(self):
         return self.title
+
+    @property
+    def owner(self):
+        return self.author
 
 
 class Comment(TimestampedModel):

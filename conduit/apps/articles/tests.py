@@ -1,3 +1,5 @@
+import inspect
+
 from django.urls import reverse
 from model_mommy import mommy
 from rest_framework import status
@@ -5,6 +7,7 @@ from rest_framework.test import APITestCase
 
 from conduit.apps.articles.models import Article, Tag
 from conduit.apps.authentication.models import User
+from conduit.apps.core.models import OwnedModel
 
 
 class ArticlesTests(APITestCase):
@@ -129,6 +132,19 @@ class ArticlesTests(APITestCase):
             'author': another_user.id
         }
         self.assertEqual(actual, article_payload)
+
+    def test_should_not_update_article_of_another_user(self):
+        another_user = User.objects.create_user('new_name', 'a@b.com')
+        original_article = mommy.make(Article, slug=None, author=another_user.profile)
+        article_payload = {
+            'title': 'title',
+            'body': 'body',
+        }
+
+        response = self.client.put(reverse('articles:articles-detail', kwargs={'slug': original_article.slug}),
+                                   data=article_payload)
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN, msg=response.data)
 
     def test_should_retrieve_article_by_tag(self):
         tag1 = Tag.objects.create(tag='tag1', slug='tag1')
