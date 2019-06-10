@@ -1,3 +1,5 @@
+import unittest
+
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -48,6 +50,39 @@ class ArticlesTests(APITestCase):
         }
         expected_article['author'] = self.test_user.id
         self.assertEqual(actual, expected_article)
+
+    def test_should_create_article_with_not_existing_tags(self):
+        expected_article = {
+            'title': 'title',
+            'body': 'body',
+            'tags': ['tag1']
+        }
+        response = self.client.post(reverse('articles:articles-list'), data=expected_article)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED, msg=response.data)
+        from_db = Article.objects.get(slug=response.data['slug'])
+        actual = {
+            'title': from_db.title,
+            'body': from_db.body,
+            'author': from_db.author.id,
+            'tags': ['tag1']
+        }
+        expected_article['author'] = self.test_user.id
+        self.assertEqual(actual, expected_article)
+
+    @unittest.skip('not implemented')
+    def test_should_not_create_article_for_another_user(self):
+        another_user = User.objects.create_user(username='another', email='a@b.com')
+        expected_article = {
+            'title': 'title',
+            'body': 'body',
+            'tags': ['tag1'],
+            'author': another_user.id
+        }
+        response = self.client.post(reverse('articles:articles-list'), data=expected_article)
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN, msg=response.data)
+        self.assertEqual(Article.objects.count(), 0)
 
     def test_should_retrieve_all_articles(self):
         quantity = 3
