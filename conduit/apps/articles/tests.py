@@ -1,5 +1,3 @@
-import inspect
-
 from django.urls import reverse
 from model_mommy import mommy
 from rest_framework import status
@@ -7,7 +5,6 @@ from rest_framework.test import APITestCase
 
 from conduit.apps.articles.models import Article, Tag
 from conduit.apps.authentication.models import User
-from conduit.apps.core.models import OwnedModel
 
 
 class ArticlesTests(APITestCase):
@@ -24,6 +21,7 @@ class ArticlesTests(APITestCase):
             'body': 'body',
             'author': self.test_user.id
         }
+
         response = self.client.post(reverse('articles:articles-list'), data=expected_article)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED, msg=response.data)
@@ -40,6 +38,7 @@ class ArticlesTests(APITestCase):
             'title': 'title',
             'body': 'body',
         }
+
         response = self.client.post(reverse('articles:articles-list'), data=expected_article)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED, msg=response.data)
@@ -58,6 +57,7 @@ class ArticlesTests(APITestCase):
             'body': 'body',
             'tags': ['tag1']
         }
+
         response = self.client.post(reverse('articles:articles-list'), data=expected_article)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED, msg=response.data)
@@ -164,6 +164,7 @@ class ArticlesTests(APITestCase):
         mommy.make(Article, slug=None, author=self.test_user.profile)
 
         response = self.client.get(reverse('articles:articles-list'), {'author': another_user.username})
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']), 1)
         self.assertEqual(response.data['results'][0]['slug'], expected_article.slug)
