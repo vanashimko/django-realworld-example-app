@@ -1,7 +1,7 @@
 from rest_framework import permissions
 from rest_framework.compat import is_authenticated
 
-from apps.core.models import OwnedModel
+from conduit.apps.core.models import OwnedModel
 
 
 class IsOwnerOrStaffOrReadOnly(permissions.BasePermission):
